@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 npm install cesium crypto-browserify stream-browserify browserify-zlib \
     assert stream-http https-browserify os-browserify url path-browserify \

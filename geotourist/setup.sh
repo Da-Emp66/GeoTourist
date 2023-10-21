@@ -5,3 +5,6 @@ npm install cesium crypto-browserify stream-browserify browserify-zlib \
     querystring-es3
 
 mv ./node_modules/cesium/Build/Cesium ./public/cesium
+
+### Optionally,
+# rm ./public/cesium/Cesium.js

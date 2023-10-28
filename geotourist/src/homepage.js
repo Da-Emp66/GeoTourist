@@ -3,12 +3,13 @@ import { Ion, VerticalOrigin, LabelStyle, IonImageryProvider, Terrain, Viewer, C
 // import "cesium/Build/Cesium/Widgets/widgets.css";
 import './App.css';
 import { useNavigate } from 'react-router-dom';
-import { React, useEffect, useState, Component } from "react";
+import { React, useEffect, useState, useRef, Component } from "react";
 
 export const HomePage = (props) => {
 
-  const [viewer, setViewer] = useState(null);
-  // const [clickedPos, setClickedPos] = useState('');
+  const refViewer = useRef(null)
+  // const [viewer, setViewer] = useState(null);
+  const [clickedPos, setClickedPos] = useState('');
 
   // Begin rendering the cesiumContainer
   useEffect(() => {
@@ -29,16 +30,14 @@ export const HomePage = (props) => {
         return view;
       }
 
-      renderFunc().then(result => setViewer(result));
+      renderFunc().then(result => {refViewer.current = result;});
   }, []);
-
-  console.log(typeof(viewer));
-  console.log(viewer)
 
   // latitude: float
   // longitude: float
   // cameraElevation: int
   function zoomToLocationOnMap(viewer, latitude, longitude, cameraElevation) {
+    var viewer = refViewer.current;
     viewer.camera.flyTo({
       destination: Cartesian3.fromDegrees(longitude, latitude, cameraElevation),
       orientation: {
@@ -56,6 +55,7 @@ export const HomePage = (props) => {
   // CesiumColor: Color.*
   // CesiumOutlineColor: Color.*
   function addLocationToMap(pointName, latitude, longitude, pointSize, outlineSize, CesiumColor, CesiumOutlineColor) {
+    var viewer = refViewer.current;
     viewer.entities.add({
       name: pointName,
       position: Cartesian3.fromDegrees(longitude, latitude),
@@ -70,6 +70,7 @@ export const HomePage = (props) => {
 
   // Use this or pickEntity(viewer, e)
   function selectPreMadeLocation(selectedEntity) {
+    var viewer = refViewer.current;
     viewer.selectedEntityChanged.addEventListener(function(selectedEntity) {
       if (defined(selectedEntity)) {
           if (defined(selectedEntity.name)) {
@@ -84,6 +85,7 @@ export const HomePage = (props) => {
   }
 
   function setMarkerInPos(position) {
+    var viewer = refViewer.current;
     viewer.pickTranslucentDepth = true;
     const locationMarker = viewer.entities.add({
       name : "location",
@@ -120,6 +122,7 @@ export const HomePage = (props) => {
 
   // Retrieves the coordinates in radians for longitude, latitude at the center of the screen
   const getCenterCoordinates = () => {
+    var viewer = refViewer.current;
     console.log("Inner Viewer");
     console.log(viewer);
     var windowPosition = new Cartesian2(viewer.container.clientWidth / 2, viewer.container.clientHeight / 2);
@@ -132,6 +135,7 @@ export const HomePage = (props) => {
   
   // Get latitude and longitude
 	const getPositionOnClick = () => {
+    var viewer = refViewer.current;
     // Get the current 3D scene
     var scene = viewer.scene;
     // Get the ellipsoid of the current 3D scene
@@ -163,7 +167,7 @@ export const HomePage = (props) => {
           entity.label.show = false;
           entity.label.text = '(' + longitudeString + ', ' + latitudeString + "," + height + ')' ;
           console.log(entity.label.text);
-          return entity.label.text;
+          setClickedPos(entity.label.text);
       } else {
           entity.label.show = false;
       }
@@ -175,15 +179,14 @@ export const HomePage = (props) => {
         entity.label.show = false;
     entity.label.text = '(' + longitudeString + ', ' + latitudeString + ', ' + height + ')' ;
     console.log(entity.label.text);
-    return entity.label.text;
+    setClickedPos(entity.label.text);
     // entity.label.fillColor = Color.BLACK;
       }, ScreenSpaceEventType.WHEEL);
-    
-    return undefined;
   }
 
   // Get latitude and longitude on mouse move
 	const getPositionOnMove = () => {
+    var viewer = refViewer.current;
     // Get the current 3D scene
     var scene = viewer.scene;
     // Get the ellipsoid of the current 3D scene
@@ -215,7 +218,7 @@ export const HomePage = (props) => {
           entity.label.show = false;
           entity.label.text = '(' + longitudeString + ', ' + latitudeString + "," + height + ')' ;
           console.log(entity.label.text);
-          return entity.label.text;
+          setClickedPos(entity.label.text);
       } else {
           entity.label.show = false;
       }
@@ -227,11 +230,9 @@ export const HomePage = (props) => {
         entity.label.show = false;
     entity.label.text = '(' + longitudeString + ', ' + latitudeString + ', ' + height + ')' ;
     console.log(entity.label.text);
-    return entity.label.text;
+    setClickedPos(entity.label.text);
     // entity.label.fillColor = Color.BLACK;
       }, ScreenSpaceEventType.WHEEL);
-    
-    return undefined;
   }
 
   return (
@@ -243,10 +244,8 @@ export const HomePage = (props) => {
         content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
       <script src="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Cesium.js" />
       <link href="https://cesium.com/downloads/cesiumjs/releases/1.110/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
-      </header> 
-      <body>
-        <div id="cesiumContainer" ref={viewer} onClick={(viewer) => { if (viewer !== null && viewer !== undefined) {getPositionOnClick()} else {console.log("Viewer is null or undefined.");}} } />
-      </body>
+      </header>
+      <div id="cesiumContainer" ref={refViewer.current} onClick={(viewer) => { if (viewer !== null && viewer !== undefined && clickedPos === '') {getPositionOnClick()} }} />
     </div>
   );
 }
